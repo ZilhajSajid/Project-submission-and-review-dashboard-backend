@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 
-import { RegisterUserPayload } from "./user.type";
+import { IUser, RegisterUserPayload } from "./user.type";
 import httpStatus from "http-status";
 import config from "../../config";
 import { prisma } from "../../lib/prisma";
@@ -38,5 +38,22 @@ const registerUser = async (payload: RegisterUserPayload) => {
   });
   return user;
 };
+const getMeFromDb = async (user: IUser) => {
+  const isUserExists = await prisma.user.findUnique({
+    where: {
+      id: user.userId,
+    },
 
-export const UserService = { registerUser };
+    omit: {
+      password: true,
+    },
+  });
+
+  if (!isUserExists) {
+    throw new Error("User not found");
+  }
+
+  return isUserExists;
+};
+
+export const UserService = { registerUser, getMeFromDb };
